@@ -79,6 +79,7 @@ public class JobCreateCommand extends ControlCommand {
   private final Argument quietArg;
   private final Argument idArg;
   private final Argument imageArg;
+  private final Argument hostnameArg;
   private final Argument tokenArg;
   private final Argument envArg;
   private final Argument argsArg;
@@ -119,6 +120,10 @@ public class JobCreateCommand extends ControlCommand {
     imageArg = parser.addArgument("image")
         .nargs("?")
         .help("Container image");
+    
+    hostnameArg = parser.addArgument("hostname")
+         .setDefault("")
+         .help("Container hostname");
 
     tokenArg = parser.addArgument("--token")
          .nargs("?")
@@ -295,6 +300,8 @@ public class JobCreateCommand extends ControlCommand {
     if (imageIdentifier != null) {
       builder.setImage(imageIdentifier);
     }
+    
+    builder.setHostname(options.getString(hostnameArg.getDest()));
 
     final List<String> command = options.getList(argsArg.getDest());
     if (command != null && !command.isEmpty()) {
