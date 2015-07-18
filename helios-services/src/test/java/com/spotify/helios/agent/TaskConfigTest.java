@@ -3,6 +3,7 @@ package com.spotify.helios.agent;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -124,10 +125,10 @@ public class TaskConfigTest {
       .build();
     
     ContainerConfig cfg = taskConfig.containerConfig(new ImageInfo(), lookup);
-    assertEquals("var1=var1", cfg.env().get(2));
+    assertTrue(cfg.env().contains("var1=var1"));
     // does not get resolved
-    assertEquals("var2=${var2}", cfg.env().get(1));
+    assertTrue(cfg.env().contains("var2=${var2}"));
     // resolved var
-    assertEquals("var3=resolved_var3", cfg.env().get(0));
+    assertTrue(cfg.env().contains("var3=resolved_var3"));
   }
 }
