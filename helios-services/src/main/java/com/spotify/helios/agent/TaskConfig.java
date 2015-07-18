@@ -21,6 +21,21 @@
 
 package com.spotify.helios.agent;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Arrays.asList;
+
+import java.security.SecureRandom;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang.text.StrSubstitutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -43,19 +58,6 @@ import com.spotify.helios.common.descriptors.ServicePortParameters;
 import com.spotify.helios.common.descriptors.ServicePorts;
 import com.spotify.helios.common.descriptors.TcpHealthCheck;
 import com.spotify.helios.serviceregistration.ServiceRegistration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.security.SecureRandom;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.util.Arrays.asList;
 
 /**
  * Provides docker container configuration for running a task.
@@ -111,7 +113,7 @@ public class TaskConfig {
     final ContainerConfig.Builder builder = ContainerConfig.builder();
 
     builder.image(job.getImage());
-    builder.cmd(job.getCommand());
+    builder.cmd(containerCmdStrings());
     builder.env(containerEnvStrings());
     builder.exposedPorts(containerExposedPorts());
     builder.volumes(volumes());
@@ -253,18 +255,32 @@ public class TaskConfig {
   }
 
   /**
-   * Compute docker container environment variables.
+   * Compute docker container environment variables and resolve them against the hosts environment.
    * @return The container environment variables.
    */
   private List<String> containerEnvStrings() {
+    final Map<String, String> hostenv = System.getenv();
     final Map<String, String> env = containerEnv();
-    final List<String> envList = Lists.newArrayList();
+    final List<String> envList = Lists.newArrayListWithCapacity(env.entrySet().size());
     for (final Map.Entry<String, String> entry : env.entrySet()) {
-      envList.add(entry.getKey() + '=' + entry.getValue());
+      envList.add(entry.getKey() + '=' + StrSubstitutor.replace(entry.getValue(), hostenv));
     }
     return envList;
   }
-
+  
+  /**
+   * Compute docker container cmd arguments and resolve them against the hosts environment.
+   * @return The container cmd arguments.
+   */
+  private List<String> containerCmdStrings() {
+    final Map<String, String> hostenv = System.getenv();
+    final List<String> list = Lists.newArrayListWithCapacity(job.getCommand().size());
+    for (String value : job.getCommand()) {
+      list.add(StrSubstitutor.replace(value, hostenv));
+    }
+    return list;
+  }
+  
   /**
    * Create a port binding configuration for the job.
    * @return The port bindings.
