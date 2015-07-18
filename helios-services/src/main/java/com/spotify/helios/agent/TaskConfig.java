@@ -110,11 +110,22 @@ public class TaskConfig {
    * @return The ContainerConfig object.
    */
   public ContainerConfig containerConfig(final ImageInfo imageInfo) {
+    return containerConfig(imageInfo, System.getenv());
+  }
+  
+  /**
+   * Create docker container configuration for a job.
+   * @param imageInfo The ImageInfo object.
+   * @param properties Properties to resolve against.
+   * @return The ContainerConfig object.
+   */
+  public ContainerConfig containerConfig(final ImageInfo imageInfo, 
+                                         final Map<String, String> properties) {
     final ContainerConfig.Builder builder = ContainerConfig.builder();
 
     builder.image(job.getImage());
-    builder.cmd(containerCmdStrings());
-    builder.env(containerEnvStrings());
+    builder.cmd(containerCmdStrings(properties));
+    builder.env(containerEnvStrings(properties));
     builder.exposedPorts(containerExposedPorts());
     builder.volumes(volumes());
 
@@ -253,17 +264,16 @@ public class TaskConfig {
     }
     return ports;
   }
-
+  
   /**
    * Compute docker container environment variables and resolve them against the hosts environment.
    * @return The container environment variables.
    */
-  private List<String> containerEnvStrings() {
-    final Map<String, String> hostenv = System.getenv();
+  private List<String> containerEnvStrings(final Map<String, String> properties) {
     final Map<String, String> env = containerEnv();
     final List<String> envList = Lists.newArrayListWithCapacity(env.entrySet().size());
     for (final Map.Entry<String, String> entry : env.entrySet()) {
-      envList.add(entry.getKey() + '=' + StrSubstitutor.replace(entry.getValue(), hostenv));
+      envList.add(entry.getKey() + '=' + StrSubstitutor.replace(entry.getValue(), properties));
     }
     return envList;
   }
@@ -272,11 +282,10 @@ public class TaskConfig {
    * Compute docker container cmd arguments and resolve them against the hosts environment.
    * @return The container cmd arguments.
    */
-  private List<String> containerCmdStrings() {
-    final Map<String, String> hostenv = System.getenv();
+  private List<String> containerCmdStrings(final Map<String, String> properties) {
     final List<String> list = Lists.newArrayListWithCapacity(job.getCommand().size());
     for (String value : job.getCommand()) {
-      list.add(StrSubstitutor.replace(value, hostenv));
+      list.add(StrSubstitutor.replace(value, properties));
     }
     return list;
   }
