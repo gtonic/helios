@@ -110,7 +110,7 @@ public class TaskConfig {
    * @return The ContainerConfig object.
    */
   public ContainerConfig containerConfig(final ImageInfo imageInfo) {
-    return containerConfig(imageInfo, System.getenv());
+    return containerConfig(imageInfo, containerEnv());
   }
   
   /**
@@ -125,7 +125,7 @@ public class TaskConfig {
 
     builder.image(job.getImage());
     builder.cmd(containerCmdStrings(properties));
-    builder.env(containerEnvStrings(properties));
+    builder.env(containerEnvStrings());
     builder.exposedPorts(containerExposedPorts());
     builder.volumes(volumes());
 
@@ -266,14 +266,14 @@ public class TaskConfig {
   }
   
   /**
-   * Compute docker container environment variables and resolve them against the hosts environment.
+   * Compute docker container environment variables.
    * @return The container environment variables.
    */
-  private List<String> containerEnvStrings(final Map<String, String> properties) {
+  private List<String> containerEnvStrings() {
     final Map<String, String> env = containerEnv();
     final List<String> envList = Lists.newArrayListWithCapacity(env.entrySet().size());
     for (final Map.Entry<String, String> entry : env.entrySet()) {
-      envList.add(entry.getKey() + '=' + StrSubstitutor.replace(entry.getValue(), properties));
+      envList.add(entry.getKey() + '=' + entry.getValue());
     }
     return envList;
   }

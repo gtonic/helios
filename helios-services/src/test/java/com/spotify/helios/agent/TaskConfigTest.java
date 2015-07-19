@@ -3,7 +3,6 @@ package com.spotify.helios.agent;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Map;
 
@@ -107,28 +106,5 @@ public class TaskConfigTest {
     assertEquals("${arg2}", cfg.cmd().get(1));
     // resolved
     assertEquals("resolved_arg3", cfg.cmd().get(2));
-  }
-  
-  @Test
-  public void testResolveEnv() throws Exception {
-	final Map<String,String> expected = ImmutableMap.of("var1", "var1", "var2", "${var2}", "var3", "${var3}");
-	final Map<String,String> lookup = ImmutableMap.of("var3", "resolved_var3");
-	  
-    final Job job = JOB.toBuilder()
-      .setEnv(expected)
-      .build();
-
-    final TaskConfig taskConfig = TaskConfig.builder()
-      .namespace("test")
-      .host(HOST)
-      .job(job)
-      .build();
-    
-    ContainerConfig cfg = taskConfig.containerConfig(new ImageInfo(), lookup);
-    assertTrue(cfg.env().contains("var1=var1"));
-    // does not get resolved
-    assertTrue(cfg.env().contains("var2=${var2}"));
-    // resolved var
-    assertTrue(cfg.env().contains("var3=resolved_var3"));
   }
 }
