@@ -123,7 +123,6 @@ public class JobCreateCommand extends ControlCommand {
         
     hostnameArg = parser.addArgument("--hostname")
          .nargs("?")
-         .setDefault("")
          .help("Container hostname");
 
     tokenArg = parser.addArgument("--token")
