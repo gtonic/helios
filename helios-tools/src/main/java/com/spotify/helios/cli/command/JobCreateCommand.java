@@ -120,8 +120,9 @@ public class JobCreateCommand extends ControlCommand {
     imageArg = parser.addArgument("image")
         .nargs("?")
         .help("Container image");
-    
-    hostnameArg = parser.addArgument("hostname")
+        
+    hostnameArg = parser.addArgument("--hostname")
+    	 .nargs("?")
          .setDefault("")
          .help("Container hostname");
 
