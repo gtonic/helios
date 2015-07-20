@@ -671,7 +671,7 @@ public abstract class SystemTestBase {
                             final Map<ServiceEndpoint, ServicePorts> registration,
                             final Integer gracePeriod,
                             final Map<String, String> volumes) throws Exception {
-    return createJob(name, version, image, "", command, env, ports, registration, 
+    return createJob(name, version, image, EMPTY_HOSTNAME, command, env, ports, registration, 
                      gracePeriod, volumes, EMPTY_EXPIRES);
   }
 
